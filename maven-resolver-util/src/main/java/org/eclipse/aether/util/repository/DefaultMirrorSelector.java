@@ -37,7 +37,7 @@ public final class DefaultMirrorSelector
 
     private static final String EXTERNAL_WILDCARD = "external:*";
 
-    private static final String HTTP_WILDCARD = "http:*";
+    private static final String EXTERNAL_HTTP_WILDCARD = "external:http:*";
 
     private final List<MirrorDef> mirrors = new ArrayList<>();
 
@@ -49,9 +49,9 @@ public final class DefaultMirrorSelector
      * @param type The content type of the mirror, must not be {@code null}.
      * @param repositoryManager A flag whether the mirror is a repository manager or a simple server.
      * @param mirrorOfIds The identifier(s) of remote repositories to mirror, must not be {@code null}. Multiple
-     *            identifiers can be separated by comma and additionally the wildcards "*", "http:*" and "external:*"
-     *            can be used to match all (external) repositories, prefixing a repo id with an exclamation mark allows
-     *            to express an exclusion. For example "external:*,!central".
+     *            identifiers can be separated by comma and additionally the wildcards "*", "external:http:*" and
+     *            "external:*" can be used to match all (external) repositories, prefixing a repo id with an
+     *            exclamation mark allows to express an exclusion. For example "external:*,!central".
      * @param mirrorOfTypes The content type(s) of remote repositories to mirror, may be {@code null} or empty to match
      *            any content type. Similar to the repo id specification, multiple types can be comma-separated, the
      *            wildcard "*" and the "!" negation syntax are supported. For example "*,!p2".
@@ -125,7 +125,7 @@ public final class DefaultMirrorSelector
      * <ul>
      * <li>{@code *} = everything,</li>
      * <li>{@code external:*} = everything not on the localhost and not file based,</li>
-     * <li>{@code http:*} = any repository using HTTP protocol,</li>
+     * <li>{@code external:http:*} = any repository not on the localhost using HTTP protocol,</li>
      * <li>{@code repo,repo1} = {@code repo} or {@code repo1},</li>
      * <li>{@code *,!repo1} = everything except {@code repo1}.</li>
      * </ul>
@@ -172,8 +172,8 @@ public final class DefaultMirrorSelector
                     result = true;
                     // don't stop processing in case a future segment explicitly excludes this repo
                 }
-                // check for http:*
-                else if ( HTTP_WILDCARD.equals( repo ) && isHttpRepo( repository ) )
+                // check for external:http:*
+                else if ( EXTERNAL_HTTP_WILDCARD.equals( repo ) && isExternalHttpRepo( repository ) )
                 {
                     result = true;
                     // don't stop processing in case a future segment explicitly excludes this repo
@@ -203,14 +203,15 @@ public final class DefaultMirrorSelector
     }
 
     /**
-     * Checks the URL to see if this repository refers to a repository using HTTP protocol.
+     * Checks the URL to see if this repository refers to a non-localhost repository using HTTP protocol.
      * 
      * @param repository The repository to check, must not be {@code null}.
      * @return {@code true} if external, {@code false} otherwise.
      */
-    static boolean isHttpRepo( RemoteRepository repository )
+    static boolean isExternalHttpRepo( RemoteRepository repository )
     {
-        return "http".equalsIgnoreCase( repository.getProtocol() );
+        return "http".equalsIgnoreCase( repository.getProtocol() )
+            && !( "localhost".equals( repository.getHost() ) || "127.0.0.1".equals( repository.getHost() ) );
     }
 
     /**
