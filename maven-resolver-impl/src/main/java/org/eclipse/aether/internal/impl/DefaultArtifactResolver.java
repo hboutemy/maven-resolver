@@ -493,6 +493,13 @@ public class DefaultArtifactResolver
 
         try
         {
+            RemoteRepository repo = group.repository;
+            if ( repo.getUrl().equals( "reject" ) )
+            {
+                throw new NoRepositoryConnectorException( repo,
+                                                          "Rejected repositories: " + repo.getMirroredRepositories() );
+            }
+
             try ( RepositoryConnector connector =
                           repositoryConnectorProvider.newRepositoryConnector( session, group.repository ) )
             {
