@@ -210,7 +210,9 @@ public final class DefaultMirrorSelector
      */
     static boolean isExternalHttpRepo( RemoteRepository repository )
     {
-        return "http".equalsIgnoreCase( repository.getProtocol() )
+        return ( "http".equalsIgnoreCase( repository.getProtocol() )
+            || "dav:http".equalsIgnoreCase( repository.getProtocol() )
+            || "dav+http".equalsIgnoreCase( repository.getProtocol() ) )
             && !( "localhost".equals( repository.getHost() ) || "127.0.0.1".equals( repository.getHost() ) );
     }
 
