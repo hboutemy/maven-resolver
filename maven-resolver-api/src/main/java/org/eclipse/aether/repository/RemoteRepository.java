@@ -61,6 +61,8 @@ public final class RemoteRepository
 
     private final boolean repositoryManager;
 
+    private boolean block;
+
     RemoteRepository( Builder builder )
     {
         if ( builder.prototype != null )
@@ -78,6 +80,7 @@ public final class RemoteRepository
             repositoryManager =
                 ( builder.delta & Builder.REPOMAN ) != 0 ? builder.repositoryManager
                                 : builder.prototype.repositoryManager;
+            block = ( builder.delta & Builder.REPOMAN ) != 0 ? builder.block : builder.prototype.block;
             mirroredRepositories =
                 ( builder.delta & Builder.MIRRORED ) != 0 ? copy( builder.mirroredRepositories )
                                 : builder.prototype.mirroredRepositories;
@@ -92,6 +95,7 @@ public final class RemoteRepository
             proxy = builder.proxy;
             authentication = builder.authentication;
             repositoryManager = builder.repositoryManager;
+            block = builder.block;
             mirroredRepositories = copy( builder.mirroredRepositories );
         }
 
@@ -210,6 +214,16 @@ public final class RemoteRepository
         return repositoryManager;
     }
 
+    /**
+     * Indicates whether this repository is blocked against any download request.
+     * 
+     * @return {@code true} if this repository is blocked against any download request, {@code false} otherwise.
+     */
+    public boolean isBlock()
+    {
+        return block;
+    }
+
     @Override
     public String toString()
     {
@@ -237,6 +251,10 @@ public final class RemoteRepository
         if ( isRepositoryManager() )
         {
             buffer.append( ", managed" );
+        }
+        if ( isBlock() )
+        {
+            buffer.append( ", blocked" );
         }
         buffer.append( ")" );
         return buffer.toString();
@@ -317,6 +335,8 @@ public final class RemoteRepository
         List<RemoteRepository> mirroredRepositories;
 
         boolean repositoryManager;
+
+        boolean block;
 
         /**
          * Creates a new repository builder.
@@ -575,6 +595,22 @@ public final class RemoteRepository
             return this;
         }
 
+
+        /**
+         * Marks the repository as blocked or not.
+         * 
+         * @param block {@code true} if the repository should not be allowed to get any request.
+         * @return This builder for chaining, never {@code null}.
+         */
+        public Builder setBlock( boolean block )
+        {
+            this.block = block;
+            if ( prototype != null )
+            {
+                delta( REPOMAN, this.block, prototype.isBlock() );
+            }
+            return this;
+        }
     }
 
 }

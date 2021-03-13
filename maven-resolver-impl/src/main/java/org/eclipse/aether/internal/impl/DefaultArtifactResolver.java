@@ -494,10 +494,10 @@ public class DefaultArtifactResolver
         try
         {
             RemoteRepository repo = group.repository;
-            if ( repo.getUrl().equals( "reject" ) )
+            if ( repo.isBlock() )
             {
                 throw new NoRepositoryConnectorException( repo,
-                                                          "Rejected repositories: " + repo.getMirroredRepositories() );
+                                                          "Blocked repositories: " + repo.getMirroredRepositories() );
             }
 
             try ( RepositoryConnector connector =
